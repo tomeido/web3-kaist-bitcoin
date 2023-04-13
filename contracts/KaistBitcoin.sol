@@ -2,7 +2,6 @@
 pragma solidity >=0.8.0;
 
 import "hardhat/console.sol";
-
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract KaistBitcoin {
@@ -17,7 +16,10 @@ contract KaistBitcoin {
     function validateTx(KaistBitcoinTx memory _tx) public pure returns (bool) {
         // verify signature
         bytes32 txHash = _txHash(_tx);
-        bytes32 hashToSigh = hash("prefx" + txHash);
+        bytes32 hashToSign = ECDSA.toEthSignedMessageHash(txHash);
+        address signer = ECDSA.recover(hashToSign, _tx.signature);
+        require(signer == _tx.from, "invalid signer"); //revert
+        return true;
     }
 
     function _txHash(
